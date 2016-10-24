@@ -1,11 +1,11 @@
-package com.codepath.apps.restclienttemplate;
+package org.ethp.codepath.twitterclient;
 
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 
+import com.codepath.apps.twitterclient.R;
 import com.codepath.oauth.OAuthLoginActionBarActivity;
-import com.codepath.oauth.OAuthLoginActivity;
 
 public class LoginActivity extends OAuthLoginActionBarActivity<RestClient> {
 
