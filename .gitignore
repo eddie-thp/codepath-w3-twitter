@@ -28,7 +28,9 @@ proguard-project.txt
 *.ipr
 *.iws
 .gradle/**
+build/
 build/**
+.idea/
 .idea/**
 import-summary.txt
 
@@ -62,3 +64,4 @@ local.properties
 .buildpath
 
 **/*/res/values/secrets.xml
+
