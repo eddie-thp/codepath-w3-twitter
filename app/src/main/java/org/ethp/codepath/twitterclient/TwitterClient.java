@@ -10,6 +10,8 @@ import com.codepath.oauth.OAuthBaseClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import static org.scribe.model.Verb.GET;
+
 /*
  * 
  * This is the object responsible for communicating with a REST API. 
@@ -24,7 +26,7 @@ import com.loopj.android.http.RequestParams;
  */
 public class TwitterClient extends OAuthBaseClient {
 	public static final Class<? extends Api> REST_API_CLASS = TwitterApi.class;
-	public static final String REST_URL = "http://api.twitter.com/1.1/"; // base API URL
+	public static final String REST_URL = "https://api.twitter.com/1.1/"; // base API URL
 	public static final String REST_CALLBACK_URL = "oauth://ethp-cp-tweets"; // Also defined in the manifest
 
 	public TwitterClient(Context context) {
@@ -36,7 +38,21 @@ public class TwitterClient extends OAuthBaseClient {
 
 	// CHANGE THIS
 	// DEFINE METHODS for different API endpoints here
-	public void getInterestingnessList(AsyncHttpResponseHandler handler) {
+
+    // GET /statuses/home_timeline.json
+    // count=25
+    // since_id=1
+    public void getHomeTimeline(AsyncHttpResponseHandler handler) {
+        String apiUrl = getApiUrl("/statuses/home_timeline.json");
+        //
+        RequestParams params = new RequestParams();
+        params.put("count", 25);
+        params.put("since_id", 1);
+        //
+        client.get(apiUrl, params, handler);
+    }
+
+    public void getInterestingnessList(AsyncHttpResponseHandler handler) {
 		String apiUrl = getApiUrl("?nojsoncallback=1&method=flickr.interestingness.getList");
 		// Can specify query string params directly or through RequestParams.
 		RequestParams params = new RequestParams();
