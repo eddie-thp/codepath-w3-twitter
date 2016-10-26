@@ -3,6 +3,6 @@
 
     <string name="app_name">Twitter Client</string>
     <string name="title_activity_timeline">Timeline</string>
-    <string name="login_label">Log in</string>
+    <string name="login_label">Connect to Twitter</string>
 
 </resources>
