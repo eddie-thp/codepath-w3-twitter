@@ -1,7 +1,9 @@
 package org.ethp.codepath.twitterclient.activities;
 
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -25,6 +27,8 @@ import cz.msebera.android.httpclient.Header;
 public class TimelineActivity extends AppCompatActivity {
 
     TwitterClient twitterClient;
+
+    SwipeRefreshLayout swipeContainer;
     TweetsAdapter tweetsAdapter;
     List<Tweet> tweets;
 
@@ -45,6 +49,12 @@ public class TimelineActivity extends AppCompatActivity {
         // Setup RecyclerView layout manager and infinite scroll
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvTweets.setLayoutManager(layoutManager);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this,
+                layoutManager.getOrientation());
+        rvTweets.addItemDecoration(dividerItemDecoration);
+
+        // Setup RecyclerView endless scroll
         rvTweets.addOnScrollListener(new EndlessRecyclerViewScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
@@ -53,6 +63,25 @@ public class TimelineActivity extends AppCompatActivity {
                 populateTimeline(maxId);
             }
         });
+
+        // Setup SwipeRefresh
+        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+        // Setup refresh listener which triggers new data loading
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // Your code to refresh the list here.
+                // Make sure you call swipeContainer.setRefreshing(false)
+                // once the network request has completed successfully.
+                // TODO fetchTimelineAsync(0);
+            }
+        });
+        // Configure the refreshing colors
+        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+
 
         populateTimeline(0);
     }

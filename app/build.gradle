@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.0"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
 
     defaultConfig {
         applicationId "com.codepath.apps.restclienttemplate"
@@ -46,9 +46,10 @@ dependencies {
     // Android Async Http for sending async network requests
     compile 'com.loopj.android:android-async-http:1.4.9'
     // Support library
-    compile 'com.android.support:design:24.2.1'
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.android.support:recyclerview-v7:24.2.1'
+    compile 'com.android.support:design:25.0.0'
+    compile 'com.android.support:support-v4:25.0.0'
+    compile 'com.android.support:appcompat-v7:25.0.0'
+    compile 'com.android.support:recyclerview-v7:25.0.0'
     // DBFlow for simple persistence with an ORM
     apt "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
 }
