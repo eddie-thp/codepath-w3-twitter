@@ -35,14 +35,19 @@ def dbflow_version = "3.1.1"
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
+    // OAuth
     compile 'com.codepath.libraries:android-oauth-handler:1.1.0'
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    // Picasso for remote image loading
-    compile 'com.squareup.picasso:picasso:2.5.2'
-    // Android Async Http for sending async network requests
-    compile 'com.loopj.android:android-async-http:1.4.9'
-    // DBFlow for simple persistence with an ORM
-    apt "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
+    // DBFlow
     compile "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
     compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
+    // Picasso for remote image loading
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'jp.wasabeef:picasso-transformations:2.1.0'
+    // Android Async Http for sending async network requests
+    compile 'com.loopj.android:android-async-http:1.4.9'
+    // Support library
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:recyclerview-v7:24.2.1'
+    // DBFlow for simple persistence with an ORM
+    apt "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
 }

@@ -15,20 +15,35 @@
         android:layout_marginRight="5dp" />
 
     <TextView
-        tools:text="\@UserName"
+        tools:text="User Name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/ivProfileImage"
         android:layout_toEndOf="@+id/ivProfileImage"
-        android:id="@+id/tvUserName" />
+        android:id="@+id/tvUserName"
+        android:textStyle="normal|bold"
+        android:textColor="@android:color/black" />
+
+    <TextView
+        tools:text="\@Name - 3m"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="15dp"
+        android:id="@+id/tvScreenNameRelativeTime"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/tvUserName"
+        android:layout_toEndOf="@+id/tvUserName" />
 
     <TextView
         tools:text="Some Tweet message..."
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:id="@+id/tvText"
-        android:layout_alignBottom="@+id/ivProfileImage"
+        android:layout_below="@+id/tvUserName"
+        android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/ivProfileImage"
-        android:layout_toEndOf="@+id/ivProfileImage" />
+        android:layout_toEndOf="@+id/ivProfileImage"
+        android:textColor="@android:color/black" />
+
 </RelativeLayout>
