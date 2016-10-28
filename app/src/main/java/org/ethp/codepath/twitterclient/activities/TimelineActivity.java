@@ -13,6 +13,7 @@ import org.ethp.codepath.twitterclient.TwitterApplication;
 import org.ethp.codepath.twitterclient.TwitterClient;
 import org.ethp.codepath.twitterclient.adapters.TweetsAdapter;
 import org.ethp.codepath.twitterclient.models.Tweet;
+import org.ethp.codepath.twitterclient.support.recyclerview.EndlessRecyclerViewScrollListener;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -40,19 +41,32 @@ public class TimelineActivity extends AppCompatActivity {
         // Setup Timeline Tweets recycler view
         RecyclerView rvTweets = (RecyclerView) findViewById(R.id.rvTweets);
         rvTweets.setAdapter(tweetsAdapter);
-        rvTweets.setLayoutManager(new LinearLayoutManager(this));
 
-        populateTimeline();
+        // Setup RecyclerView layout manager and infinite scroll
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        rvTweets.setLayoutManager(layoutManager);
+        rvTweets.addOnScrollListener(new EndlessRecyclerViewScrollListener(layoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                // Triggered only when new data needs to be appended to the list
+                long maxId = tweets.get(tweets.size() - 1).getUid();
+                populateTimeline(maxId);
+            }
+        });
+
+        populateTimeline(0);
     }
 
     // Send API request and creates tweets from json
-    private void populateTimeline() {
-        twitterClient.getHomeTimeline(new JsonHttpResponseHandler() {
+    private void populateTimeline(long maxId) {
+        twitterClient.getHomeTimeline(maxId, new JsonHttpResponseHandler() {
               @Override
               public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
                   Log.d("DEBUG", response.toString());
-                  tweets.addAll(Tweet.fromJSONArray(response));
-                  tweetsAdapter.notifyItemRangeInserted(0, tweets.size());
+                  List<Tweet> tweetsToAdd = Tweet.fromJSONArray(response);
+                  int insertAt = tweets.size();
+                  tweets.addAll(tweetsToAdd);
+                  tweetsAdapter.notifyItemRangeInserted(insertAt, tweetsToAdd.size());
               }
 
               @Override

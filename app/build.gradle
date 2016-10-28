@@ -46,6 +46,7 @@ dependencies {
     // Android Async Http for sending async network requests
     compile 'com.loopj.android:android-async-http:1.4.9'
     // Support library
+    compile 'com.android.support:design:24.2.1'
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:recyclerview-v7:24.2.1'
     // DBFlow for simple persistence with an ORM
