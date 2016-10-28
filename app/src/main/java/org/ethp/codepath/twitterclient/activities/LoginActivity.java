@@ -1,13 +1,14 @@
-package org.ethp.codepath.twitterclient;
+package org.ethp.codepath.twitterclient.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
-import android.widget.Toast;
 
 import com.codepath.apps.twitterclient.R;
 import com.codepath.oauth.OAuthLoginActionBarActivity;
+
+import org.ethp.codepath.twitterclient.TwitterClient;
 
 public class LoginActivity extends OAuthLoginActionBarActivity<TwitterClient> {
 

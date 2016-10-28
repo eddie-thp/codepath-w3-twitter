@@ -1,15 +1,17 @@
-package org.ethp.codepath.twitterclient;
+package org.ethp.codepath.twitterclient.activities;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.ListView;
 
 import com.codepath.apps.twitterclient.R;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
-import org.ethp.codepath.twitterclient.adapters.TweetsArrayAdapter;
+import org.ethp.codepath.twitterclient.TwitterApplication;
+import org.ethp.codepath.twitterclient.TwitterClient;
+import org.ethp.codepath.twitterclient.adapters.TweetsAdapter;
 import org.ethp.codepath.twitterclient.models.Tweet;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,9 +24,8 @@ import cz.msebera.android.httpclient.Header;
 public class TimelineActivity extends AppCompatActivity {
 
     TwitterClient twitterClient;
-    TweetsArrayAdapter tweetsArrayAdapter;
+    TweetsAdapter tweetsAdapter;
     List<Tweet> tweets;
-    ListView lvTweets;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,10 +35,12 @@ public class TimelineActivity extends AppCompatActivity {
         twitterClient = TwitterApplication.getRestClient();
 
         tweets = new ArrayList<>();
-        tweetsArrayAdapter = new TweetsArrayAdapter(this, tweets);
+        tweetsAdapter = new TweetsAdapter(this, tweets);
 
-        lvTweets = (ListView) findViewById(R.id.lvTweets);
-        lvTweets.setAdapter(tweetsArrayAdapter);
+        // Setup Timeline Tweets recycler view
+        RecyclerView rvTweets = (RecyclerView) findViewById(R.id.rvTweets);
+        rvTweets.setAdapter(tweetsAdapter);
+        rvTweets.setLayoutManager(new LinearLayoutManager(this));
 
         populateTimeline();
     }
@@ -49,7 +52,7 @@ public class TimelineActivity extends AppCompatActivity {
               public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
                   Log.d("DEBUG", response.toString());
                   tweets.addAll(Tweet.fromJSONArray(response));
-                  tweetsArrayAdapter.notifyDataSetChanged();
+                  tweetsAdapter.notifyItemRangeInserted(0, tweets.size());
               }
 
               @Override
