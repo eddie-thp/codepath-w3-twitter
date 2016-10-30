@@ -1,0 +1,67 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:context="org.ethp.codepath.twitterclient.fragments.ComposeTweetFragment">
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_margin="14dp"
+        android:layout_alignParentRight="true"
+        tools:src="@drawable/ic_launcher"
+        android:id="@+id/ivProfileImage" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="14dp"
+        app:srcCompat="@drawable/close"
+        android:id="@+id/ivClose"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@android:color/transparent" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="14dp"
+        android:layout_marginRight="14dp"
+        android:layout_below="@+id/ivClose"
+        android:id="@+id/etTweet"
+        android:ems="10"
+        android:maxLength="@integer/tweet_max_length"
+        android:background="@null"
+        android:hint="@string/tweet_hint"
+        android:cursorVisible="true" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:id="@+id/vDivider"
+        android:layout_above="@+id/btTweet"
+        android:background="@android:color/darker_gray" />
+
+    <TextView
+        android:text="@integer/tweet_max_length"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/btTweet"
+        android:layout_toLeftOf="@+id/btTweet"
+        android:layout_toStartOf="@+id/btTweet"
+        android:layout_marginBottom="14dp"
+        android:id="@+id/tvMessageSize" />
+
+    <Button
+        android:text="@string/tweet_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="14dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:id="@+id/btTweet"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:background="@android:color/holo_blue_light" />
+</RelativeLayout>

@@ -1,12 +1,12 @@
 package org.ethp.codepath.twitterclient.models;
 
-import org.ethp.codepath.twitterclient.MyDatabase;
 import com.raizlabs.android.dbflow.annotation.Column;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
 import com.raizlabs.android.dbflow.sql.language.Select;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 
+import org.ethp.codepath.twitterclient.MyDatabase;
 import org.json.JSONException;
 import org.json.JSONObject;
 

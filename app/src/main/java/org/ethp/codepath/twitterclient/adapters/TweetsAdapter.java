@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,10 +21,6 @@ import java.util.List;
 import java.util.Locale;
 
 import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
-
-import static com.codepath.apps.twitterclient.R.id.ivProfileImage;
-import static com.codepath.apps.twitterclient.R.id.tvText;
-import static com.codepath.apps.twitterclient.R.id.tvUserName;
 
 /**
  * Tweets timeline RecyclerView adapter implementation

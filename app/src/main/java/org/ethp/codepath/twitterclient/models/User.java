@@ -2,16 +2,23 @@ package org.ethp.codepath.twitterclient.models;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcel;
 
 /**
- * Created by eddie_thp on 10/26/16.
+ * Twitter User class
  */
-
+@Parcel
 public class User {
     String name;
     long uid;
     String screenName;
     String profileImageUrl;
+
+    /**
+     * Empty constructor required by the Parceler library
+     */
+    public User() {
+    }
 
     public String getName() {
         return name;

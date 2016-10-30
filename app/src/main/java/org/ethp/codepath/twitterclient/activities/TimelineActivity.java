@@ -1,12 +1,15 @@
 package org.ethp.codepath.twitterclient.activities;
 
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 
 import com.codepath.apps.twitterclient.R;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -14,9 +17,12 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import org.ethp.codepath.twitterclient.TwitterApplication;
 import org.ethp.codepath.twitterclient.TwitterClient;
 import org.ethp.codepath.twitterclient.adapters.TweetsAdapter;
+import org.ethp.codepath.twitterclient.fragments.ComposeTweetFragment;
 import org.ethp.codepath.twitterclient.models.Tweet;
+import org.ethp.codepath.twitterclient.models.User;
 import org.ethp.codepath.twitterclient.support.recyclerview.EndlessRecyclerViewScrollListener;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -24,11 +30,14 @@ import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
-public class TimelineActivity extends AppCompatActivity {
+public class TimelineActivity extends AppCompatActivity implements ComposeTweetFragment.OnStatusUpdateListener {
 
     TwitterClient twitterClient;
 
+    User mAuthenticatedUser;
+
     SwipeRefreshLayout swipeContainer;
+    RecyclerView rvTweets;
     TweetsAdapter tweetsAdapter;
     List<Tweet> tweets;
 
@@ -39,11 +48,61 @@ public class TimelineActivity extends AppCompatActivity {
 
         twitterClient = TwitterApplication.getRestClient();
 
+        mAuthenticatedUser = null;
+        twitterClient.getAuthenticatedUser(new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                Log.d("DEBUG", response.toString());
+                try {
+                    mAuthenticatedUser = User.fromJSONObject(response);
+                } catch (JSONException e) {
+                    // TODO handle error
+                }
+
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                Log.d("DEBUG", errorResponse.toString());
+                // TODO handle error
+            }
+        });
+
         tweets = new ArrayList<>();
         tweetsAdapter = new TweetsAdapter(this, tweets);
 
+        // Setup Tweet button
+        FloatingActionButton btSendTweet = (FloatingActionButton) findViewById(R.id.btSendTweet);
+        btSendTweet.setOnClickListener(new FloatingActionButton.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentManager fm = getSupportFragmentManager();
+                ComposeTweetFragment composeComposeTweetFragment = ComposeTweetFragment.newInstance(mAuthenticatedUser);
+
+                /*
+                searchSettingsFragment.setOnApplyClickedListener(new SearchSettingsFragment.OnApplyClickedListener() {
+                    @Override
+                    public void onApplyClicked(Date beginDate, int sortBySelection, boolean newsDeskArtsChecked, boolean newsDeskFashionChecked, boolean newsDeskSportsChecked) {
+                        // Update parameters and execute search
+                        searchParameters.setBeginDate(beginDate);
+                        searchParameters.setSortBy(getResources()
+                                .getStringArray(R.array.sort_by_api_values)[sortBySelection]);
+                        searchParameters.setArtsChecked(newsDeskArtsChecked);
+                        searchParameters.setFashionAndStyleChecked(newsDeskFashionChecked);
+                        searchParameters.setSportsChecked(newsDeskSportsChecked);
+
+                        // Execute search
+                        SearchActivity.this.fetchArticles(0);
+                    }
+                });*/
+
+                composeComposeTweetFragment.show(fm, "fragment_send_tweet");
+            }
+        });
+
+
         // Setup Timeline Tweets recycler view
-        RecyclerView rvTweets = (RecyclerView) findViewById(R.id.rvTweets);
+        rvTweets = (RecyclerView) findViewById(R.id.rvTweets);
         rvTweets.setAdapter(tweetsAdapter);
 
         // Setup RecyclerView layout manager and infinite scroll
@@ -104,5 +163,12 @@ public class TimelineActivity extends AppCompatActivity {
                   // TODO handle error
               }
           });
+    }
+
+    @Override
+    public void onStatusUpdate(Tweet status) {
+        tweets.add(0, status);
+        tweetsAdapter.notifyItemInserted(0);
+        rvTweets.scrollToPosition(0);
     }
 }
