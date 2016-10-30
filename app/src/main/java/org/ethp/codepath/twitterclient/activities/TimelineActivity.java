@@ -117,8 +117,11 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
         rvTweets.addOnScrollListener(new EndlessRecyclerViewScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
-                // Triggered only when new data needs to be appended to the list
-                long maxId = tweets.get(tweets.size() - 1).getUid();
+                // This method is triggered when new data needs to be appended to the list
+                // Subtracting 1 from the last tweet id as explained in the Twitter API guideline
+                // https://dev.twitter.com/rest/public/timelines#optimizing-max-id-for-environments-with-64-bit-integers
+                // in order to prevent duplicated entries in the timeline
+                long maxId = (tweets.get(tweets.size() - 1).getUid() - 1);
                 populateTimeline(maxId);
             }
         });
