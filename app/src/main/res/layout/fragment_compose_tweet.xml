@@ -31,7 +31,6 @@
         android:layout_below="@+id/ivClose"
         android:id="@+id/etTweet"
         android:ems="10"
-        android:maxLength="@integer/tweet_max_length"
         android:background="@null"
         android:hint="@string/tweet_hint"
         android:cursorVisible="true" />

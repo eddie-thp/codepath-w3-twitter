@@ -1,9 +1,11 @@
 package org.ethp.codepath.twitterclient.fragments;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -33,6 +35,9 @@ import org.parceler.Parcels;
 
 import cz.msebera.android.httpclient.Header;
 import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
+
+import static android.R.attr.editable;
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
 
 /**
  * Compose tweet fragment
@@ -100,7 +105,7 @@ public class ComposeTweetFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View tweetView = inflater.inflate(R.layout.fragment_tweet, container, false);
+        View tweetView = inflater.inflate(R.layout.fragment_compose_tweet, container, false);
 
         ibCloseFragment = (ImageButton) tweetView.findViewById(R.id.ivClose);
         ivAuthenticatedUserProfile = (ImageView) tweetView.findViewById(R.id.ivProfileImage);
@@ -126,7 +131,17 @@ public class ComposeTweetFragment extends DialogFragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int start, int count, int after) {
-                tvTweetSize.setText(String.valueOf(mTweetMaxLength - charSequence.length()));
+                int remainingLength = mTweetMaxLength - charSequence.length();
+                tvTweetSize.setText(String.valueOf(remainingLength));
+
+                boolean btTweetEnabled = true;
+                int color = android.R.color.tertiary_text_dark;
+                if (remainingLength < 0) {
+                    btTweetEnabled = false;
+                    color  = android.R.color.holo_red_light;
+                }
+                tvTweetSize.setTextColor(ContextCompat.getColor(getContext(), color));
+                btTweet.setEnabled(btTweetEnabled);
             }
 
             @Override
