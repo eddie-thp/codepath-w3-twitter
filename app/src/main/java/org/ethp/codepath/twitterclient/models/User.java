@@ -4,12 +4,14 @@ import com.raizlabs.android.dbflow.structure.BaseModel;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcel;
 
 /**
  * Twitter User class
  */
 // @Table(database = TwitterApplicationDatabase.class)
 // @Parcel(analyze={User.class})
+@Parcel
 public class User extends BaseModel {
     // @PrimaryKey
     // @Column
