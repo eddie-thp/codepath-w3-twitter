@@ -238,7 +238,11 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
                     mTweetsAdapter.notifyItemRangeInserted(insertAt, newTweetsCount);
                     // Update mMaxIdIdx
                     mMaxIdIdx = mTweets.size() - 1;
-                } else { // In case we are refreshing
+                } else {
+                    // In case we are refreshing, scroll to beginning of the list
+                    if(mSinceIdIdx == 0) {
+                        rvTweets.scrollToPosition(0);
+                    }
                     // Insert the collection before sinceId Tweet
                     mTweets.addAll(mSinceIdIdx, newTweets);
                     mTweetsAdapter.notifyItemRangeInserted(mSinceIdIdx, newTweetsCount);
