@@ -30,80 +30,92 @@ import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
+/**
+ * Tweet timeline activity, controls retrieval of Tweets timeline from the Twitter API
+ */
 public class TimelineActivity extends AppCompatActivity implements ComposeTweetFragment.OnStatusUpdateListener {
 
-    TwitterClient twitterClient;
+    private static final String LOG_TAG = "TimelineActivity";
 
+    // Twitter REST Client implementation
+    TwitterClient mTwitterClient;
+
+    // Stored index of the position that contains Tweet for sinceId and maxId
+    // for Twitter REST API "pagination" control
+    int mSinceIdIdx;
+    int mMaxIdIdx;
+
+    // Authenticated user
     User mAuthenticatedUser;
 
+    // Tweets list and adapter
+    TweetsAdapter mTweetsAdapter;
+    List<Tweet> mTweets;
+
+    // Layout view references
     SwipeRefreshLayout swipeContainer;
     RecyclerView rvTweets;
-    TweetsAdapter tweetsAdapter;
-    List<Tweet> tweets;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timeline);
 
-        twitterClient = TwitterApplication.getRestClient();
+        preInitializeMemberVariables();
 
+        // Setup authenticated user
+        getAuthenticatedUser();
+
+        // Setup recycler view with infinite scroll support
+        setupTweetsRecyclerView();
+
+        // Setup swipe refresh support
+        setupSwipeRefresh();
+
+        // Setup compose tweet button
+        setupComposeTweetButton();
+
+        // Fetch timeline
+        fetchTimeline();
+    }
+
+    private void preInitializeMemberVariables() {
+        // Member variables
+        mTwitterClient = TwitterApplication.getRestClient();
+        mSinceIdIdx = -1;
+        mMaxIdIdx = -1;
         mAuthenticatedUser = null;
-        twitterClient.getAuthenticatedUser(new JsonHttpResponseHandler() {
+        mTweets = new ArrayList<>();
+        mTweetsAdapter = new TweetsAdapter(this, mTweets);
+        // Layout view references, could've used ButterKnife or DataBinding framework for this instead
+        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+        rvTweets = (RecyclerView) findViewById(R.id.rvTweets);
+    }
+
+    private void getAuthenticatedUser() {
+        mTwitterClient.getAuthenticatedUser(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                Log.d("DEBUG", response.toString());
+                Log.d(LOG_TAG, response.toString());
                 try {
                     mAuthenticatedUser = User.fromJSONObject(response);
                 } catch (JSONException e) {
                     // TODO handle error
                 }
-
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.d("DEBUG", errorResponse.toString());
+                Log.e(LOG_TAG, errorResponse.toString());
                 // TODO handle error
             }
         });
 
-        tweets = new ArrayList<>();
-        tweetsAdapter = new TweetsAdapter(this, tweets);
+    }
 
-        // Setup Tweet button
-        FloatingActionButton btSendTweet = (FloatingActionButton) findViewById(R.id.btSendTweet);
-        btSendTweet.setOnClickListener(new FloatingActionButton.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FragmentManager fm = getSupportFragmentManager();
-                ComposeTweetFragment composeComposeTweetFragment = ComposeTweetFragment.newInstance(mAuthenticatedUser);
-
-                /*
-                searchSettingsFragment.setOnApplyClickedListener(new SearchSettingsFragment.OnApplyClickedListener() {
-                    @Override
-                    public void onApplyClicked(Date beginDate, int sortBySelection, boolean newsDeskArtsChecked, boolean newsDeskFashionChecked, boolean newsDeskSportsChecked) {
-                        // Update parameters and execute search
-                        searchParameters.setBeginDate(beginDate);
-                        searchParameters.setSortBy(getResources()
-                                .getStringArray(R.array.sort_by_api_values)[sortBySelection]);
-                        searchParameters.setArtsChecked(newsDeskArtsChecked);
-                        searchParameters.setFashionAndStyleChecked(newsDeskFashionChecked);
-                        searchParameters.setSportsChecked(newsDeskSportsChecked);
-
-                        // Execute search
-                        SearchActivity.this.fetchArticles(0);
-                    }
-                });*/
-
-                composeComposeTweetFragment.show(fm, "fragment_send_tweet");
-            }
-        });
-
-
+    private void setupTweetsRecyclerView() {
         // Setup Timeline Tweets recycler view
-        rvTweets = (RecyclerView) findViewById(R.id.rvTweets);
-        rvTweets.setAdapter(tweetsAdapter);
+        rvTweets.setAdapter(mTweetsAdapter);
 
         // Setup RecyclerView layout manager and infinite scroll
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -118,24 +130,35 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
                 // This method is triggered when new data needs to be appended to the list
-                // Subtracting 1 from the last tweet id as explained in the Twitter API guideline
-                // https://dev.twitter.com/rest/public/timelines#optimizing-max-id-for-environments-with-64-bit-integers
-                // in order to prevent duplicated entries in the timeline
-                long maxId = (tweets.get(tweets.size() - 1).getUid() - 1);
-                populateTimeline(maxId);
+                fetchTimeline();
             }
         });
 
+
+    }
+
+    private void setupSwipeRefresh() {
         // Setup SwipeRefresh
-        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // Your code to refresh the list here.
-                // Make sure you call swipeContainer.setRefreshing(false)
-                // once the network request has completed successfully.
-                // TODO fetchTimelineAsync(0);
+                // Reset mMaxId
+                mMaxIdIdx = -1;
+
+                // In case we are already refreshing data, lets discard the older data from since
+                if (mSinceIdIdx != -1) {
+                    List<Tweet> endOfTheList = mTweets.subList(mSinceIdIdx, mTweets.size() - 1);
+                    mTweets.removeAll(endOfTheList);
+                    mTweetsAdapter.notifyItemRangeRemoved(mSinceIdIdx, endOfTheList.size());
+                }
+
+                // When refreshing the timeline, we need to pass the sinceId as explained in the Twitter API guidelines
+                // https://dev.twitter.com/rest/public/timelines#using-since-id-for-the-greatest-efficiency
+                // SinceId will be the 1st Tweet in our timeline
+                mSinceIdIdx = 0;
+
+                fetchTimeline();
             }
         });
         // Configure the refreshing colors
@@ -143,35 +166,108 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
-
-
-        populateTimeline(0);
     }
 
-    // Send API request and creates tweets from json
-    private void populateTimeline(long maxId) {
-        twitterClient.getHomeTimeline(maxId, new JsonHttpResponseHandler() {
-              @Override
-              public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                  Log.d("DEBUG", response.toString());
-                  List<Tweet> tweetsToAdd = Tweet.fromJSONArray(response);
-                  int insertAt = tweets.size();
-                  tweets.addAll(tweetsToAdd);
-                  tweetsAdapter.notifyItemRangeInserted(insertAt, tweetsToAdd.size());
-              }
-
-              @Override
-              public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                  Log.d("DEBUG" , errorResponse.toString());
-                  // TODO handle error
-              }
-          });
+    private void setupComposeTweetButton() {
+        FloatingActionButton btSendTweet = (FloatingActionButton) findViewById(R.id.btSendTweet);
+        btSendTweet.setOnClickListener(new FloatingActionButton.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentManager fm = getSupportFragmentManager();
+                ComposeTweetFragment composeComposeTweetFragment = ComposeTweetFragment.newInstance(mAuthenticatedUser);
+                composeComposeTweetFragment.show(fm, "fragment_send_tweet");
+            }
+        });
     }
 
+    private long getSinceId() {
+        long sinceId = 1;
+
+        if (mSinceIdIdx != -1) {
+            sinceId = mTweets.get(mSinceIdIdx).getUid();
+        }
+
+        return sinceId;
+    }
+
+    private long getMaxId() {
+        long maxId = -1;
+
+        if (mMaxIdIdx != -1) {
+            // Subtracting 1 from the last tweet id as explained in the Twitter API guidelines
+            // https://dev.twitter.com/rest/public/timelines#optimizing-max-id-for-environments-with-64-bit-integers
+            // in order to prevent duplicated entries in the timeline
+            // MaxId = Id of the Last Tweet - 1;
+            maxId = (mTweets.get(mMaxIdIdx).getUid() - 1);
+        }
+
+        return maxId;
+    }
+
+    /**
+     * Get Tweets list from the Tweet REST API
+     */
+    private void fetchTimeline() {
+        long maxId = getMaxId();
+        long sinceId = getSinceId();
+        mTwitterClient.getHomeTimeline(maxId, sinceId, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
+                // Log.d(LOG_TAG, response.toString());
+                Log.d(LOG_TAG, "BEFORE TotalTweets: " + mTweets.size() + " SINCE IDX: " + mSinceIdIdx + " MAX_IDX " + mMaxIdIdx);
+
+                // Stop refreshing feedback
+                swipeContainer.setRefreshing(false);
+                // Retrieve new tweets from response
+                List<Tweet> newTweets = Tweet.fromJSONArray(response);
+                int newTweetsCount = newTweets.size();
+
+                // In case we are not refreshing
+                if (mSinceIdIdx == -1) {
+                    // Append result to the end of the timeline and update mMaxIdIdx as being the last position of the timeline
+                    int insertAt = mTweets.size();
+                    mTweets.addAll(newTweets);
+                    mTweetsAdapter.notifyItemRangeInserted(insertAt, newTweetsCount);
+                    // Update mMaxIdIdx
+                    mMaxIdIdx = mTweets.size() - 1;
+                } else { // In case we are refreshing
+                    // Insert the collection before sinceId Tweet
+                    mTweets.addAll(mSinceIdIdx, newTweets);
+                    mTweetsAdapter.notifyItemRangeInserted(mSinceIdIdx, newTweetsCount);
+                    if (newTweetsCount == 25) {
+                        // In case we receive a full page, we just update the sinceIdx
+                        mSinceIdIdx += newTweetsCount;
+                        // Update mMaxIdIdx
+                        mMaxIdIdx = newTweetsCount - 1;
+                    } else {
+                        // Lets reset the since idx and the maxId
+                        mSinceIdIdx = -1;
+                        mMaxIdIdx = mTweets.size() - 1;
+                    }
+                }
+                Log.d(LOG_TAG, "AFTER TotalTweets: " + mTweets.size() + " SINCE IDX: " + mSinceIdIdx + " MAX_IDX " + mMaxIdIdx);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                Log.d("DEBUG", errorResponse.toString());
+                // D/DEBUG: {"errors":[{"code":44,"message":"since_id parameter is invalid."}]}
+
+                // TODO handle error
+            }
+        });
+    }
+
+    /**
+     * On ComposeTweetFragment StatusUpdate store new tweet into the timeline
+     *
+     * @param status
+     */
     @Override
     public void onStatusUpdate(Tweet status) {
-        tweets.add(0, status);
-        tweetsAdapter.notifyItemInserted(0);
+        mTweets.add(0, status);
+        mTweetsAdapter.notifyItemInserted(0);
         rvTweets.scrollToPosition(0);
+        // TODO how to sync this with mSinceId and mMaxId
     }
 }

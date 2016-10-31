@@ -1,16 +1,21 @@
 package org.ethp.codepath.twitterclient.models;
 
+import com.raizlabs.android.dbflow.structure.BaseModel;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.parceler.Parcel;
 
 /**
  * Twitter User class
  */
-@Parcel
-public class User {
-    String name;
+// @Table(database = TwitterApplicationDatabase.class)
+// @Parcel(analyze={User.class})
+public class User extends BaseModel {
+    // @PrimaryKey
+    // @Column
     long uid;
+
+    String name;
     String screenName;
     String profileImageUrl;
 

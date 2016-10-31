@@ -6,7 +6,7 @@ import com.raizlabs.android.dbflow.annotation.Table;
 import com.raizlabs.android.dbflow.sql.language.Select;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 
-import org.ethp.codepath.twitterclient.MyDatabase;
+import org.ethp.codepath.twitterclient.TwitterApplicationDatabase;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -18,7 +18,7 @@ import java.util.List;
  * https://github.com/pardom/ActiveAndroid/wiki/Creating-your-database-model
  * 
  */
-@Table(database = MyDatabase.class)
+@Table(database = TwitterApplicationDatabase.class)
 public class SampleModel extends BaseModel {
 
 	@PrimaryKey
