@@ -2,7 +2,23 @@
 
 **Twitter Client** is an android app that allows a user to view his Twitter timeline and post a new tweet. The app utilizes [Twitter REST API](https://dev.twitter.com/rest/public).
 
-Time spent: **X** hours spent in total
+Time spent: **10+** hours spent in total
+
+**IMPORTANT:**
+In order to use the application, developer needs to create a secrets.xml file accordingly to the["Secrets in resource files" codepath.com guide](http://guides.codepath.com/android/Storing-Secret-Keys-in-Android#secrets-in-resource-files) and store the following keys:
+
+* **est_api_twitter_consumer_secret** : [Twitter REST API](https://apps.twitter.com/) Consumer Secret
+* **est_api_twitter_consumer_secret** : [Twitter REST API](https://apps.twitter.com/) Consumer Key
+
+**secrets.xml** sample:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rest_api_twitter_consumer_secret"> </string>
+    <string name="rest_api_twitter_consumer_key"> </string>
+</resources>
+```
 
 ## User Stories
 
@@ -52,7 +68,7 @@ The following **additional** features are implemented:
 
 Here's a walkthrough of implemented user stories:
 
-<img src='http://i.imgur.com/link/to/your/gif/file.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='http://i.imgur.com/Wzh1GQR.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
