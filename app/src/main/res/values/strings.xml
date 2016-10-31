@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">Twitter Client</string>
-    <string name="title_activity_timeline">Timeline</string>
+    <string name="title_activity_timeline">Home</string>
     <string name="login_label">Connect to Twitter</string>
 
     <!-- TODO: Remove or change this placeholder text -->
