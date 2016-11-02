@@ -4,43 +4,62 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
+import com.astuetz.PagerSlidingTabStrip;
 import com.codepath.apps.twitterclient.R;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.ethp.codepath.twitterclient.TwitterApplication;
 import org.ethp.codepath.twitterclient.TwitterClient;
-import org.ethp.codepath.twitterclient.adapters.TweetsAdapter;
 import org.ethp.codepath.twitterclient.fragments.ComposeTweetFragment;
-import org.ethp.codepath.twitterclient.fragments.TweetsListFragment;
+import org.ethp.codepath.twitterclient.fragments.HomeTimelineFragment;
+import org.ethp.codepath.twitterclient.fragments.MentionsTimelineFragment;
 import org.ethp.codepath.twitterclient.models.Tweet;
 import org.ethp.codepath.twitterclient.models.User;
-import org.ethp.codepath.twitterclient.support.recyclerview.EndlessRecyclerViewScrollListener;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import cz.msebera.android.httpclient.Header;
-
-import static com.codepath.apps.twitterclient.R.id.fragmentTweetsList;
-import static com.codepath.apps.twitterclient.R.id.rvTweets;
-import static com.codepath.apps.twitterclient.R.id.swipeContainer;
 
 /**
  * Tweet timeline activity, controls retrieval of Tweets timeline from the Twitter API
  */
 public class TimelineActivity extends AppCompatActivity implements ComposeTweetFragment.OnStatusUpdateListener {
+
+    public class TweetsPageAdapter extends FragmentPagerAdapter {
+        final int PAGE_COUNT = 2;
+
+        private String titles[] = {"Home", "Mentions"};
+
+        public TweetsPageAdapter(FragmentManager fragmentManager) {
+            super(fragmentManager);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return titles[position];
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            if (position == 0) {
+                return new HomeTimelineFragment();
+            } else {
+                return new MentionsTimelineFragment();
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return PAGE_COUNT;
+        }
+    }
 
     private static final String LOG_TAG = "TimelineActivity";
 
@@ -61,6 +80,17 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
         // Sets the Toolbar to act as the ActionBar for this Activity window.
         // Make sure the toolbar exists in the activity and is not null
         setSupportActionBar(toolbar);
+
+        ////
+        // Get the view pager
+        ViewPager vpPager = (ViewPager) findViewById(R.id.viewpager);
+        // Set the view pager adapter for the pager
+        vpPager.setAdapter(new TweetsPageAdapter(getSupportFragmentManager()));
+        // Find the pager slinding tabs
+        PagerSlidingTabStrip tabString = (PagerSlidingTabStrip) findViewById(R.id.tabs);
+        // Attache the pager tabstrip to the view pager
+        tabString.setViewPager(vpPager);
+        ////
 
         preInitializeMemberVariables();
 
