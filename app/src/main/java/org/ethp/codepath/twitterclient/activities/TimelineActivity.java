@@ -1,5 +1,6 @@
 package org.ethp.codepath.twitterclient.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -9,6 +10,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.astuetz.PagerSlidingTabStrip;
@@ -24,6 +27,7 @@ import org.ethp.codepath.twitterclient.models.Tweet;
 import org.ethp.codepath.twitterclient.models.User;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcels;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -31,6 +35,9 @@ import cz.msebera.android.httpclient.Header;
  * Tweet timeline activity, controls retrieval of Tweets timeline from the Twitter API
  */
 public class TimelineActivity extends AppCompatActivity implements ComposeTweetFragment.OnStatusUpdateListener {
+
+    private static final String AUTHENTICATED_USER = "AuthUser";
+
 
     public class TweetsPageAdapter extends FragmentPagerAdapter {
         final int PAGE_COUNT = 2;
@@ -100,6 +107,19 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
         // Setup compose tweet button
         setupComposeTweetButton();
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_timeline, menu);
+        return true;
+    }
+
+    public void onProfileView(MenuItem mi) {
+        Intent intent = new Intent(this, ProfileActivity.class);
+
+        intent.putExtra(AUTHENTICATED_USER, Parcels.wrap(mAuthenticatedUser));
+        startActivity(intent);
     }
 
     private void preInitializeMemberVariables() {

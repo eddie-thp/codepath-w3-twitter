@@ -80,6 +80,22 @@ public class TwitterClient extends OAuthBaseClient {
         client.get(apiUrl, params, handler);
     }
 
+    // supports screenname as paarm as well
+    public void getUserTimeline(long maxId, long sinceId, String screenName, AsyncHttpResponseHandler handler) {
+        String apiUrl = getApiUrl("/statuses/user_timeline.json");
+        //
+        RequestParams params = new RequestParams();
+        params.put("count", 25);
+        params.put("screen_name", screenName);
+        //
+        params.put("since_id", sinceId);
+        if (maxId != -1) {
+            params.put("max_id", maxId);
+        }
+        //
+        client.get(apiUrl, params, handler);
+    }
+
     /**
      * Updates the authenticated user status (tweets)
      *
