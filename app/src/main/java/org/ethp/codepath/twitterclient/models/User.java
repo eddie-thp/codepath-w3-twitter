@@ -20,6 +20,9 @@ public class User extends BaseModel {
     String name;
     String screenName;
     String profileImageUrl;
+    String description;
+    int followersCount;
+    int friendsCount;
 
     /**
      * Empty constructor required by the Parceler library
@@ -43,6 +46,12 @@ public class User extends BaseModel {
         return profileImageUrl;
     }
 
+    public String getTagLine() { return description; }
+
+    public int getFollowersCount() { return followersCount; }
+
+    public int getFriendsCount() { return friendsCount; }
+
     public static User fromJSONObject(JSONObject jsonObject) throws JSONException {
         User user = new User();
 
@@ -50,6 +59,9 @@ public class User extends BaseModel {
         user.uid = jsonObject.getLong("id");
         user.screenName = jsonObject.getString("screen_name");
         user.profileImageUrl = jsonObject.getString("profile_image_url");
+        user.description = jsonObject.getString("description");
+        user.followersCount = jsonObject.getInt("followers_count");
+        user.friendsCount = jsonObject.getInt("friends_count");
         return user;
     }
 }

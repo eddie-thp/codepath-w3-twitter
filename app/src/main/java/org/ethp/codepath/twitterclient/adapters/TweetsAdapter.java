@@ -1,6 +1,7 @@
 package org.ethp.codepath.twitterclient.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -9,11 +10,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.codepath.apps.twitterclient.R;
 import com.squareup.picasso.Picasso;
 
+import org.ethp.codepath.twitterclient.activities.ProfileActivity;
+import org.ethp.codepath.twitterclient.application.AppConstants;
 import org.ethp.codepath.twitterclient.models.Tweet;
+import org.ethp.codepath.twitterclient.models.User;
+import org.parceler.Parcels;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -22,16 +28,30 @@ import java.util.Locale;
 
 import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
 
+import static com.codepath.apps.twitterclient.R.id.tvName;
+
 /**
  * Tweets timeline RecyclerView adapter implementation
  */
 public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewHolder> {
 
+    // Define listener member variable
+    private OnItemClickListener listener;
+    // Define the listener interface
+    public interface OnItemClickListener {
+        void onItemClick(View itemView, int position);
+    }
+    // Define the method that allows the parent activity or fragment to define the listener
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
+
     /**
      * Holds a reference to the Tweet Item layout widgets
      */
-    public static class TweetViewHolder extends RecyclerView.ViewHolder {
+    public class TweetViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
+        Context mContext;
         ImageView ivProfileImage;
         TextView tvUserName;
         TextView tvScreenName;
@@ -44,16 +64,35 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
         public TweetViewHolder(View itemView) {
             super(itemView);
 
+            mContext = getContext();
+
             ivProfileImage = (ImageView) itemView.findViewById(R.id.ivProfileImage);
             tvUserName = (TextView) itemView.findViewById(R.id.tvUserName);
             tvScreenName = (TextView) itemView.findViewById(R.id.tvScreenNameRelativeTime);
             tvText = (TextView) itemView.findViewById(R.id.tvText);
+
+            if (!(mContext instanceof ProfileActivity)) {
+                ivProfileImage.setOnClickListener(this);
+            }
+        }
+
+        @Override
+        public void onClick(View view) {
+            int position = getAdapterPosition();
+
+            // Check if an item was deleted, but the user clicked it before the UI removed it
+            if (position != RecyclerView.NO_POSITION) {
+                Tweet tweet = tweets.get(position);
+                Intent intent = new Intent(mContext, ProfileActivity.class);
+                intent.putExtra(AppConstants.EXTRA_USER, Parcels.wrap(tweet.getUser()));
+                mContext.startActivity(intent);
+            }
         }
     }
 
-    private Context context;
+    Context context;
 
-    private List<Tweet> tweets;
+    List<Tweet> tweets;
 
     /**
      * TweetsAdapter Constructor
@@ -86,6 +125,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
 
         // Inflate the Tweet Item layout and return the view holder
         View contactView = inflater.inflate(R.layout.item_tweet, parent, false);
+
         return (new TweetViewHolder(contactView));
     }
 

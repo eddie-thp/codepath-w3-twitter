@@ -27,6 +27,7 @@ import com.squareup.picasso.Picasso;
 
 import org.ethp.codepath.twitterclient.TwitterApplication;
 import org.ethp.codepath.twitterclient.TwitterClient;
+import org.ethp.codepath.twitterclient.application.AppConstants;
 import org.ethp.codepath.twitterclient.models.Tweet;
 import org.ethp.codepath.twitterclient.models.User;
 import org.json.JSONException;
@@ -43,8 +44,6 @@ import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
  * Compose tweet fragment
  */
 public class ComposeTweetFragment extends DialogFragment {
-
-    private static final String AUTHENTICATED_USER = "AuthUser";
 
     /**
      * This interface must be implemented by activities that contain this
@@ -83,7 +82,7 @@ public class ComposeTweetFragment extends DialogFragment {
         ComposeTweetFragment fragment = new ComposeTweetFragment();
 
         Bundle args = new Bundle();
-        args.putParcelable(AUTHENTICATED_USER, Parcels.wrap(authenticatedUser));
+        args.putParcelable(AppConstants.EXTRA_USER, Parcels.wrap(authenticatedUser));
         fragment.setArguments(args);
 
         return fragment;
@@ -94,7 +93,7 @@ public class ComposeTweetFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         // Retrieve arguments and initialize class attributes
         if (getArguments() != null) {
-            mAuthenticatedUser = Parcels.unwrap(getArguments().getParcelable(AUTHENTICATED_USER));
+            mAuthenticatedUser = Parcels.unwrap(getArguments().getParcelable(AppConstants.EXTRA_USER));
         }
         mTwitterClient = TwitterApplication.getRestClient();
         mTweetMaxLength = getResources().getInteger(R.integer.tweet_max_length);

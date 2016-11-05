@@ -10,6 +10,8 @@ import com.loopj.android.http.RequestParams;
 import org.scribe.builder.api.Api;
 import org.scribe.builder.api.TwitterApi;
 
+import java.util.Map;
+
 /**
  * 
  * This is the object responsible for communicating with the Twitter REST API.
@@ -54,6 +56,61 @@ public class TwitterClient extends OAuthBaseClient {
         params.put("since_id", sinceId);
         if (maxId != -1) {
             params.put("max_id", maxId);
+        }
+        //
+        client.get(apiUrl, params, handler);
+    }
+
+
+    /**
+     * Gets the latest 25 rows from the home timeline
+     * GET /statuses/home_timeline.json ? count=25 & since_id=1
+     * @param maxId
+     * @param handler
+     */
+    public void getMentionsTimeline(long maxId, long sinceId, AsyncHttpResponseHandler handler) {
+        String apiUrl = getApiUrl("/statuses/mentions_timeline.json");
+        //
+        RequestParams params = new RequestParams();
+        params.put("count", 25);
+        //
+        params.put("since_id", sinceId);
+        if (maxId != -1) {
+            params.put("max_id", maxId);
+        }
+        //
+        client.get(apiUrl, params, handler);
+    }
+
+    // supports screenname as paarm as well
+    public void getUserTimeline(long maxId, long sinceId, String screenName, AsyncHttpResponseHandler handler) {
+        String apiUrl = getApiUrl("/statuses/user_timeline.json");
+        //
+        RequestParams params = new RequestParams();
+        params.put("count", 25);
+        params.put("screen_name", screenName);
+        //
+        params.put("since_id", sinceId);
+        if (maxId != -1) {
+            params.put("max_id", maxId);
+        }
+        //
+        client.get(apiUrl, params, handler);
+    }
+
+
+    public void getTweetsTimeline(String apiResourceName, long maxId, long sinceId, Map<String, String> extraParams, AsyncHttpResponseHandler handler) {
+        String apiUrl = getApiUrl("/statuses/" + apiResourceName + ".json");
+        //
+        RequestParams params = new RequestParams();
+        params.put("count", 25);
+        params.put("since_id", sinceId);
+        if (maxId != -1) {
+            params.put("max_id", maxId);
+        }
+        // add extra parameters
+        for (Map.Entry<String, String> entry: extraParams.entrySet()) {
+            params.put(entry.getKey(), entry.getValue());
         }
         //
         client.get(apiUrl, params, handler);
