@@ -24,7 +24,7 @@ import java.util.List;
 import static com.codepath.apps.twitterclient.R.id.rvTweets;
 import static com.codepath.apps.twitterclient.R.id.swipeContainer;
 
-public class TweetsListFragment extends Fragment {
+public class TweetsTimelineFragment extends Fragment {
 
     // Tweets list and adapter
     TweetsAdapter mTweetsAdapter;

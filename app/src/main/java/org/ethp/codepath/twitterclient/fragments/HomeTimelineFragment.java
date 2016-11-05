@@ -21,7 +21,7 @@ import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
-public class HomeTimelineFragment extends TweetsListFragment {
+public class HomeTimelineFragment extends TweetsTimelineFragment {
 
     private static final String LOG_TAG = "HomeTimelineFragment";
 

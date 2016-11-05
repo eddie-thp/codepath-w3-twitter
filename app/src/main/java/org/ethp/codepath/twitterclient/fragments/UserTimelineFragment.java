@@ -12,6 +12,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.ethp.codepath.twitterclient.TwitterApplication;
 import org.ethp.codepath.twitterclient.TwitterClient;
+import org.ethp.codepath.twitterclient.application.AppConstants;
 import org.ethp.codepath.twitterclient.models.Tweet;
 import org.ethp.codepath.twitterclient.models.User;
 import org.ethp.codepath.twitterclient.support.recyclerview.EndlessRecyclerViewScrollListener;
@@ -27,11 +28,9 @@ import cz.msebera.android.httpclient.Header;
  * Created by eddie_thp on 11/3/16.
  */
 
-public class UserTimelineFragment extends TweetsListFragment {
+public class UserTimelineFragment extends TweetsTimelineFragment {
 
     private static final String LOG_TAG = "UserTimelineFragment";
-
-    private static final String AUTHENTICATED_USER = "AuthUser";
 
     // Twitter REST Client implementation
     TwitterClient mTwitterClient;
@@ -55,7 +54,7 @@ public class UserTimelineFragment extends TweetsListFragment {
         UserTimelineFragment fragment = new UserTimelineFragment();
 
         Bundle args = new Bundle();
-        args.putParcelable(AUTHENTICATED_USER, Parcels.wrap(authenticatedUser));
+        args.putParcelable(AppConstants.EXTRA_USER, Parcels.wrap(authenticatedUser));
         fragment.setArguments(args);
 
         return fragment;
@@ -66,7 +65,7 @@ public class UserTimelineFragment extends TweetsListFragment {
         super.onCreate(savedInstanceState);
         // Rretrieve arguments
         if (getArguments() != null) {
-            mAuthenticatedUser = Parcels.unwrap(getArguments().getParcelable(AUTHENTICATED_USER));
+            mAuthenticatedUser = Parcels.unwrap(getArguments().getParcelable(AppConstants.EXTRA_USER));
         }
         // Initialize member variables
         mTwitterClient = TwitterApplication.getRestClient();

@@ -8,36 +8,28 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.codepath.apps.twitterclient.R;
-import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.ethp.codepath.twitterclient.TwitterApplication;
 import org.ethp.codepath.twitterclient.TwitterClient;
+import org.ethp.codepath.twitterclient.application.ActivityHelper;
+import org.ethp.codepath.twitterclient.application.AppConstants;
 import org.ethp.codepath.twitterclient.fragments.ComposeTweetFragment;
 import org.ethp.codepath.twitterclient.fragments.HomeTimelineFragment;
 import org.ethp.codepath.twitterclient.fragments.MentionsTimelineFragment;
 import org.ethp.codepath.twitterclient.models.Tweet;
 import org.ethp.codepath.twitterclient.models.User;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.parceler.Parcels;
-
-import cz.msebera.android.httpclient.Header;
 
 /**
  * Tweet timeline activity, controls retrieval of Tweets timeline from the Twitter API
  */
 public class TimelineActivity extends AppCompatActivity implements ComposeTweetFragment.OnStatusUpdateListener {
-
-    private static final String AUTHENTICATED_USER = "AuthUser";
-
 
     public class TweetsPageAdapter extends FragmentPagerAdapter {
         final int PAGE_COUNT = 2;
@@ -81,32 +73,13 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timeline);
 
-        // Find the toolbar view inside the activity layout
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.title_activity_timeline);
-        // Sets the Toolbar to act as the ActionBar for this Activity window.
-        // Make sure the toolbar exists in the activity and is not null
-        setSupportActionBar(toolbar);
-
-        ////
-        // Get the view pager
-        ViewPager vpPager = (ViewPager) findViewById(R.id.viewpager);
-        // Set the view pager adapter for the pager
-        vpPager.setAdapter(new TweetsPageAdapter(getSupportFragmentManager()));
-        // Find the pager slinding tabs
-        PagerSlidingTabStrip tabString = (PagerSlidingTabStrip) findViewById(R.id.tabs);
-        // Attache the pager tabstrip to the view pager
-        tabString.setViewPager(vpPager);
-        ////
+        ActivityHelper.setupSupportActionBar(this, R.id.toolbar, R.string.title_activity_timeline);
 
         preInitializeMemberVariables();
 
-        // Setup authenticated user
-        getAuthenticatedUser();
+        setupViewPager();
 
-        // Setup compose tweet button
         setupComposeTweetButton();
-
     }
 
     @Override
@@ -115,40 +88,20 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
         return true;
     }
 
-    public void onProfileView(MenuItem mi) {
-        Intent intent = new Intent(this, ProfileActivity.class);
-
-        intent.putExtra(AUTHENTICATED_USER, Parcels.wrap(mAuthenticatedUser));
-        startActivity(intent);
-    }
-
     private void preInitializeMemberVariables() {
         // Member variables
         mTwitterClient = TwitterApplication.getRestClient();
-        mAuthenticatedUser = null;
+        mAuthenticatedUser = Parcels.unwrap(getIntent().getParcelableExtra(AppConstants.EXTRA_USER));
     }
 
-    private void getAuthenticatedUser() {
-        mTwitterClient.getAuthenticatedUser(new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                Log.d(LOG_TAG, response.toString());
-                try {
-                    mAuthenticatedUser = User.fromJSONObject(response);
-                } catch (JSONException e) {
-                    // TODO handle error
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.e(LOG_TAG, errorResponse.toString());
-                // TODO handle error
-            }
-        });
-
+    private void setupViewPager() {
+        // Setup view pager with TweetsPageAdapter
+        ViewPager vpPager = (ViewPager) findViewById(R.id.viewpager);
+        vpPager.setAdapter(new TweetsPageAdapter(getSupportFragmentManager()));
+        // Setup PagerSlidingTabString with ViewPager
+        PagerSlidingTabStrip tabString = (PagerSlidingTabStrip) findViewById(R.id.tabs);
+        tabString.setViewPager(vpPager);
     }
-
 
     private void setupComposeTweetButton() {
         FloatingActionButton btSendTweet = (FloatingActionButton) findViewById(R.id.btSendTweet);
@@ -160,6 +113,12 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
                 composeComposeTweetFragment.show(fm, "fragment_send_tweet");
             }
         });
+    }
+
+    public void onProfileView(MenuItem mi) {
+        Intent intent = new Intent(this, ProfileActivity.class);
+        intent.putExtra(AppConstants.EXTRA_USER, Parcels.wrap(mAuthenticatedUser));
+        startActivity(intent);
     }
 
     /**
