@@ -10,6 +10,8 @@ import com.loopj.android.http.RequestParams;
 import org.scribe.builder.api.Api;
 import org.scribe.builder.api.TwitterApi;
 
+import java.util.Map;
+
 /**
  * 
  * This is the object responsible for communicating with the Twitter REST API.
@@ -91,6 +93,24 @@ public class TwitterClient extends OAuthBaseClient {
         params.put("since_id", sinceId);
         if (maxId != -1) {
             params.put("max_id", maxId);
+        }
+        //
+        client.get(apiUrl, params, handler);
+    }
+
+
+    public void getTweetsTimeline(String apiResourceName, long maxId, long sinceId, Map<String, String> extraParams, AsyncHttpResponseHandler handler) {
+        String apiUrl = getApiUrl("/statuses/" + apiResourceName + ".json");
+        //
+        RequestParams params = new RequestParams();
+        params.put("count", 25);
+        params.put("since_id", sinceId);
+        if (maxId != -1) {
+            params.put("max_id", maxId);
+        }
+        // add extra parameters
+        for (Map.Entry<String, String> entry: extraParams.entrySet()) {
+            params.put(entry.getKey(), entry.getValue());
         }
         //
         client.get(apiUrl, params, handler);
