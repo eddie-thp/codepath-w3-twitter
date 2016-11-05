@@ -33,7 +33,6 @@ public class LoginActivity extends OAuthLoginActionBarActivity<TwitterClient> {
         mTwitterClient = TwitterApplication.getRestClient();
     }
 
-
     // Inflate the menu; this adds items to the action bar if it is present.
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -67,8 +66,6 @@ public class LoginActivity extends OAuthLoginActionBarActivity<TwitterClient> {
                 // TODO handle error
             }
         });
-
-
     }
 
     // OAuth authentication flow failed, handle the error

@@ -35,16 +35,7 @@ import static com.codepath.apps.twitterclient.R.id.tvName;
  */
 public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewHolder> {
 
-    // Define listener member variable
-    private OnItemClickListener listener;
-    // Define the listener interface
-    public interface OnItemClickListener {
-        void onItemClick(View itemView, int position);
-    }
-    // Define the method that allows the parent activity or fragment to define the listener
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        this.listener = listener;
-    }
+    private static final String LOG_TAG = "TweetsAdapter";
 
     /**
      * Holds a reference to the Tweet Item layout widgets
@@ -135,11 +126,9 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
 
         holder.ivProfileImage.setImageResource(0);
         holder.tvUserName.setText(tweet.getUser().getName());
-
         String formattedScreenNameRelativeTime = formatScreenNameRelativeTime(tweet.getUser().getScreenName(),
                 tweet.getCreatedAt());
         holder.tvScreenName.setText(formattedScreenNameRelativeTime);
-
         holder.tvText.setText(tweet.getText());
 
         Picasso.with(getContext()).load(tweet.getUser().getProfileImageUrl()).transform(new RoundedCornersTransformation(5, 0)).into(holder.ivProfileImage);
@@ -162,7 +151,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
                     DateUtils.getRelativeTimeSpanString(dateMillis,
                             System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString());
         } catch (ParseException e) {
-            Log.e("TWEETS_ARRAY_ADAPTER", "Failed to format relative date", e);
+            Log.e(LOG_TAG, "Failed to format relative date", e);
         }
 
         return formattedText;
