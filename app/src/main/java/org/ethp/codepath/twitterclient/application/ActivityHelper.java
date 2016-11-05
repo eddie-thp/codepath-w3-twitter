@@ -17,7 +17,7 @@ public abstract class ActivityHelper {
      * @param toolbarTitleRes
      */
     public static void setupSupportActionBar(AppCompatActivity appCompatActivity, int toolbarIdRes, int toolbarTitleRes) {
-        setupSupportActionBar(appCompatActivity, toolbarIdRes, appCompatActivity.getText(toolbarIdRes));
+        setupSupportActionBar(appCompatActivity, toolbarIdRes, appCompatActivity.getString(toolbarTitleRes));
     }
 
     public static void setupSupportActionBar(AppCompatActivity appCompatActivity, int toolbarIdRes, CharSequence toolbarTitle) {

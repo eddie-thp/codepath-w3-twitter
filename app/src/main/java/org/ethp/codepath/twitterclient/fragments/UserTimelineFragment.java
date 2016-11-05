@@ -9,6 +9,9 @@ import org.parceler.Parcels;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * User timeline fragment
+ */
 @TweetsTimeline(apiResourceName = "user_timeline")
 public class UserTimelineFragment extends TweetsTimelineFragment {
 
