@@ -22,6 +22,7 @@
             android:id="@+id/tabs"
             app:pstsShouldExpand="true"
             app:pstsTextAllCaps="true"
+            app:pstsIndicatorColor="@color/twitterAccent"
             android:layout_width="match_parent"
             android:layout_height="48dp" />
 
@@ -43,7 +44,7 @@
         app:layout_anchorGravity="bottom|right|end"
         app:fabSize="normal"
         app:srcCompat="@drawable/twitter"
-        android:tint="@android:color/holo_blue_light"
+        android:tint="@android:color/white"
         android:clickable="true" />
 
 </android.support.design.widget.CoordinatorLayout>

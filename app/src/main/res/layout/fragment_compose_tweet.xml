@@ -62,5 +62,5 @@
         android:id="@+id/btTweet"
         android:textAllCaps="false"
         android:textColor="@android:color/white"
-        android:background="@android:color/holo_blue_light" />
+        android:background="@color/twitterAccent" />
 </RelativeLayout>

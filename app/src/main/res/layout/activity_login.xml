@@ -8,18 +8,20 @@
 
     <ImageView
         android:id="@+id/twitter_bird"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_above="@+id/btConnect"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
         android:tint="@android:color/white"
         app:srcCompat="@drawable/twitter"
         />
 
     <Button
+        android:id="@+id/btConnect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/twitter_bird"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
         android:layout_margin="20dp"
         android:onClick="loginToRest"
         android:text="@string/login_label" />
