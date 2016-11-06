@@ -28,6 +28,7 @@ import org.ethp.codepath.twitterclient.application.AppConstants;
 import org.ethp.codepath.twitterclient.fragments.ComposeTweetFragment;
 import org.ethp.codepath.twitterclient.models.Tweet;
 import org.ethp.codepath.twitterclient.models.User;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.parceler.Parcels;
 
@@ -93,7 +94,29 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
             }
 
             setupOnReplyClickListener();
+            setupOnRetweetClickListener();
             setupOnFavoriteClickListener();
+        }
+
+        void setFavorite(int favoriteCount, boolean favorited) {
+            // Set text
+            tvFavoriteCount.setText(String.valueOf(favoriteCount));
+            // Set the favorite color
+            Resources res = getContext().getResources();
+            int favoriteColor = (favorited ? R.color.twitterFavoritedIcon : R.color.twitterItemIcons);
+            tvFavoriteCount.setTextColor(res.getColor(favoriteColor));
+            DrawableCompat.setTint(ivFavorite.getDrawable(), res.getColor(favoriteColor));
+        }
+
+        void setRetweet(int retweetCount, boolean retweeted) {
+            // Set text
+            tvRetweetCount.setText(String.valueOf(retweetCount));
+            // Set the retweet color
+            Resources res = getContext().getResources();
+            int retweetColor = (retweeted ? R.color.twitterRetweetedIcon : R.color.twitterItemIcons);
+            tvRetweetCount.setTextColor(res.getColor(retweetColor));
+            DrawableCompat.setTint(ivRetweet.getDrawable(), res.getColor(retweetColor));
+
         }
 
         private void setupOnReplyClickListener() {
@@ -131,23 +154,76 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
             });
         }
 
-        public void setupOnFavoriteClickListener() {
-            int position = getAdapterPosition();
+        public void setupOnRetweetClickListener() {
+            ivRetweet.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    final int position = getAdapterPosition();
 
-            // Check if an item was deleted, but the user clicked it before the UI removed it
-            if (position != RecyclerView.NO_POSITION) {
-                Tweet tweet = tweets.get(position);
-                mTwitterClient.postFavorite(tweet.getUid(), new JsonHttpResponseHandler() {
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                        // TODO
+                    // Check if an item was deleted, but the user clicked it before the UI removed it
+                    if (position != RecyclerView.NO_POSITION) {
+                        final Tweet tweet = tweets.get(position);
+                        final long tweetId = tweet.getUid();
+                        final boolean retweeted = tweet.isRetweeted();
+
+                        mTwitterClient.postRetweet(tweetId, retweeted, new JsonHttpResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+
+                                try {
+                                    Tweet retweetedTweet = Tweet.fromJSONObject(response);
+                                    // There seems to be a bug in the API, in that the retweeted flag doesn't get reseted
+                                    retweetedTweet.setRetweeted(!retweeted);
+                                    tweets.set(position, retweetedTweet);
+                                    notifyItemChanged(position);
+                                } catch (JSONException e) {
+
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                                Log.e(LOG_TAG, throwable.getMessage(), throwable);
+                            }
+                        });
                     }
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                        // TODO
+                }
+            });
+        }
+
+        public void setupOnFavoriteClickListener() {
+            ivFavorite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    final int position = getAdapterPosition();
+
+                    // Check if an item was deleted, but the user clicked it before the UI removed it
+                    if (position != RecyclerView.NO_POSITION) {
+                        final Tweet tweet = tweets.get(position);
+                        final long tweetId = tweet.getUid();
+                        final boolean favorited = tweet.isFavorited();
+
+                        mTwitterClient.postFavorite(tweetId, favorited, new JsonHttpResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+
+                                try {
+                                    Tweet favoritedTweet = Tweet.fromJSONObject(response);
+                                    tweets.set(position, favoritedTweet);
+                                    notifyItemChanged(position);
+                                } catch (JSONException e) {
+
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                                // TODO
+                            }
+                        });
                     }
-                });
-            }
+                }
+            });
         }
 
     }
@@ -206,19 +282,10 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
         holder.tvScreenName.setText(formattedScreenNameRelativeTime);
         holder.tvText.setText(tweet.getText());
 
-        Resources res = getContext().getResources();
-
-        // Set the retweet color
-        int retweetColor = (tweet.isRetweeted() ? R.color.twitterRetweetedIcon : R.color.twitterItemIcons);
-        holder.tvRetweetCount.setText(String.valueOf(tweet.getRetweetCount()));
-        holder.tvRetweetCount.setTextColor(res.getColor(retweetColor));
-        DrawableCompat.setTint(holder.ivRetweet.getDrawable(), res.getColor(retweetColor));
-
-        // Set the favorite color
-        int favoriteColor = (tweet.isFavorited() ? R.color.twitterFavoritedIcon : R.color.twitterItemIcons);
-        holder.tvFavoriteCount.setText(String.valueOf(tweet.getFavoriteCount()));
-        holder.tvFavoriteCount.setTextColor(res.getColor(favoriteColor));
-        DrawableCompat.setTint(holder.ivFavorite.getDrawable(), res.getColor(favoriteColor));
+        // set retweet
+        holder.setRetweet(tweet.getRetweetCount(), tweet.isRetweeted());
+        // Set favorite
+        holder.setFavorite(tweet.getFavoriteCount(), tweet.isFavorited());
 
         Picasso.with(getContext()).load(tweet.getUser().getProfileImageUrl()).transform(new RoundedCornersTransformation(5, 0)).into(holder.ivProfileImage);
     }

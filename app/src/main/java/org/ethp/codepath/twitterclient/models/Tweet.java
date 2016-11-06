@@ -47,9 +47,13 @@ public class Tweet {
 
     public boolean isRetweeted() { return retweeted; }
 
+    public void setRetweeted(boolean retweeted) {
+        this.retweeted = retweeted;
+    }
+
     public int getFavoriteCount() { return favoriteCount; }
 
-    public boolean isFavorited() { return retweeted; }
+    public boolean isFavorited() { return favorited; }
 
     public static Tweet fromJSONObject(JSONObject jsonObject) throws JSONException {
         Tweet tweet = new Tweet();

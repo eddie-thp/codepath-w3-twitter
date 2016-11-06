@@ -67,13 +67,34 @@ public class TwitterClient extends OAuthBaseClient {
         client.get(apiUrl, params, handler);
     }
 
-    public void postFavorite(long tweetId, AsyncHttpResponseHandler handler) {
-        // https://api.twitter.com/1.1/favorites/create.json?id=243138128959913986
-        // favorites/destroy.json?id=2432423
-        String apiUrl = getApiUrl("/favorites/create.json");
+    /**
+     * Creates or destroys the favorite flag
+     *
+     * @param tweetId
+     * @param favorited
+     * @param handler
+     */
+    public void postFavorite(long tweetId, boolean favorited, AsyncHttpResponseHandler handler) {
+        String apiResource = (favorited ? "destroy" : "create");
+
+        String apiUrl = getApiUrl("/favorites/" + apiResource + ".json");
         RequestParams params = new RequestParams();
         params.put("id", tweetId);
         client.post(apiUrl, params, handler);
+    }
+
+    /**
+     * Retweets or unretweets the tweet
+     *
+     * @param tweetId
+     * @param retweeted
+     * @param handler
+     */
+    public void postRetweet(long tweetId, boolean retweeted, AsyncHttpResponseHandler handler) {
+        String apiResource = (retweeted ? "unretweet" : "retweet");
+
+        String apiUrl = getApiUrl(String.format("/statuses/%s/%d.json", apiResource, tweetId));
+        client.post(apiUrl, handler);
     }
 
     /**
