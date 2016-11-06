@@ -269,7 +269,7 @@ public abstract class TweetsTimelineFragment extends Fragment {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.d("DEBUG", errorResponse.toString());
+                Log.d(LOG_TAG, throwable.getMessage(), throwable);
                 // D/DEBUG: {"errors":[{"code":44,"message":"since_id parameter is invalid."}]}
                 // {"errors":[{"code":135,"message":"Timestamp out of bounds."}]}
 
