@@ -11,11 +11,13 @@ import com.codepath.apps.twitterclient.R;
 import com.squareup.picasso.Picasso;
 
 import org.ethp.codepath.twitterclient.application.AppConstants;
+import org.ethp.codepath.twitterclient.fragments.ComposeTweetFragment;
 import org.ethp.codepath.twitterclient.fragments.UserTimelineFragment;
+import org.ethp.codepath.twitterclient.models.Tweet;
 import org.ethp.codepath.twitterclient.models.User;
 import org.parceler.Parcels;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends AppCompatActivity implements ComposeTweetFragment.OnStatusUpdateListener {
 
     User mAuthenticatedUser;
 
@@ -57,5 +59,10 @@ public class ProfileActivity extends AppCompatActivity {
         tvFollowing.setText(mAuthenticatedUser.getFriendsCount() + " Following");
 
         Picasso.with(this).load(mAuthenticatedUser.getProfileImageUrl()).into(ivProfileImage);
+    }
+
+    @Override
+    public void onStatusUpdate(Tweet status) {
+        // TODO if we reply to a tweet, what to do ?
     }
 }

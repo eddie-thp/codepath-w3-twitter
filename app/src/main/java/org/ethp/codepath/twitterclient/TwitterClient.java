@@ -7,6 +7,7 @@ import com.codepath.oauth.OAuthBaseClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import org.ethp.codepath.twitterclient.models.Tweet;
 import org.scribe.builder.api.Api;
 import org.scribe.builder.api.TwitterApi;
 
@@ -66,6 +67,15 @@ public class TwitterClient extends OAuthBaseClient {
         client.get(apiUrl, params, handler);
     }
 
+    public void postFavorite(long tweetId, AsyncHttpResponseHandler handler) {
+        // https://api.twitter.com/1.1/favorites/create.json?id=243138128959913986
+        // favorites/destroy.json?id=2432423
+        String apiUrl = getApiUrl("/favorites/create.json");
+        RequestParams params = new RequestParams();
+        params.put("id", tweetId);
+        client.post(apiUrl, params, handler);
+    }
+
     /**
      * Updates the authenticated user status (tweets)
      *
@@ -74,12 +84,15 @@ public class TwitterClient extends OAuthBaseClient {
      * @param status
      * @param handler
      */
-    public void postStatus(String status, AsyncHttpResponseHandler handler)
+    public void postStatus(String status, Tweet replyTo, AsyncHttpResponseHandler handler)
     {
         String apiUrl = getApiUrl("/statuses/update.json");
 
         RequestParams params = new RequestParams();
         params.put("status", status);
+        if (replyTo != null) {
+            params.put("in_reply_to_status_id", replyTo.getUid());
+        }
 
         client.post(apiUrl, params, handler);
     }

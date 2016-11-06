@@ -1,5 +1,7 @@
 package org.ethp.codepath.twitterclient.fragments;
 
+import org.ethp.codepath.twitterclient.models.Tweet;
+
 /**
  * Home timeline fragment
  */

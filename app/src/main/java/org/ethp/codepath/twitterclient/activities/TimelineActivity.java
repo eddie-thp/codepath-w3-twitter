@@ -24,6 +24,7 @@ import org.ethp.codepath.twitterclient.fragments.HomeTimelineFragment;
 import org.ethp.codepath.twitterclient.fragments.MentionsTimelineFragment;
 import org.ethp.codepath.twitterclient.models.Tweet;
 import org.ethp.codepath.twitterclient.models.User;
+import org.ethp.codepath.twitterclient.support.fragments.SmartFragmentStatePagerAdapter;
 import org.parceler.Parcels;
 
 /**
@@ -31,7 +32,7 @@ import org.parceler.Parcels;
  */
 public class TimelineActivity extends AppCompatActivity implements ComposeTweetFragment.OnStatusUpdateListener {
 
-    public class TweetsPageAdapter extends FragmentPagerAdapter {
+    public class TweetsPageAdapter extends SmartFragmentStatePagerAdapter {
         final int PAGE_COUNT = 2;
 
         private String titles[] = {"Home", "Mentions"};
@@ -68,6 +69,13 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
     // Authenticated user
     User mAuthenticatedUser;
 
+    // Adapters
+    TweetsPageAdapter mTweetsPageAdapter;
+
+    // Views
+    ViewPager vpPager;
+    PagerSlidingTabStrip psTabStrip;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,12 +103,14 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
     }
 
     private void setupViewPager() {
+        // Instantiate the adapter
+        mTweetsPageAdapter = new TweetsPageAdapter(getSupportFragmentManager());
         // Setup view pager with TweetsPageAdapter
-        ViewPager vpPager = (ViewPager) findViewById(R.id.viewpager);
-        vpPager.setAdapter(new TweetsPageAdapter(getSupportFragmentManager()));
+        vpPager = (ViewPager) findViewById(R.id.viewpager);
+        vpPager.setAdapter(mTweetsPageAdapter);
         // Setup PagerSlidingTabString with ViewPager
-        PagerSlidingTabStrip tabString = (PagerSlidingTabStrip) findViewById(R.id.tabs);
-        tabString.setViewPager(vpPager);
+        psTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tabs);
+        psTabStrip.setViewPager(vpPager);
     }
 
     private void setupComposeTweetButton() {
@@ -128,10 +138,12 @@ public class TimelineActivity extends AppCompatActivity implements ComposeTweetF
      */
     @Override
     public void onStatusUpdate(Tweet status) {
-        // TODO uncomment, make it work with fragments
-        // mTweets.add(0, status);
-        // mTweetsAdapter.notifyItemInserted(0);
-        // rvTweets.scrollToPosition(0);
-        // TODO how to sync this with mSinceId and mMaxId
+        Fragment currentFragment = mTweetsPageAdapter.getRegisteredFragment(vpPager.getCurrentItem());
+
+        if (currentFragment instanceof HomeTimelineFragment)
+        {
+            HomeTimelineFragment homeTimelineFragment = (HomeTimelineFragment) currentFragment;
+            homeTimelineFragment.addStatusUpdateTweet(status);
+        }
     }
 }

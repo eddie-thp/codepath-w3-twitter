@@ -1,9 +1,9 @@
 package org.ethp.codepath.twitterclient.fragments;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
@@ -37,9 +37,6 @@ import org.parceler.Parcels;
 import cz.msebera.android.httpclient.Header;
 import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
 
-import static android.R.attr.editable;
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
-
 /**
  * Compose tweet fragment
  */
@@ -48,7 +45,7 @@ public class ComposeTweetFragment extends DialogFragment {
     /**
      * This interface must be implemented by activities that contain this
      * fragment to receive the composed tweet back
-     *
+     * <p>
      * See the Android Training lesson
      * <a href="http://developer.android.com/training/basics/fragments/communicating.html">Communicating with Other Fragments</a> for more information.
      */
@@ -60,10 +57,13 @@ public class ComposeTweetFragment extends DialogFragment {
 
     TwitterClient mTwitterClient;
     User mAuthenticatedUser;
+    Tweet mReplyTo;
     private int mTweetMaxLength;
     private Tweet mTweet;
 
     ImageButton ibCloseFragment;
+    ImageView ivArrowDown;
+    TextView tvInReplyTo;
     ImageView ivAuthenticatedUserProfile;
     EditText etTweet;
     TextView tvTweetSize;
@@ -74,26 +74,49 @@ public class ComposeTweetFragment extends DialogFragment {
     }
 
     /**
-     * Factory method instantiates a new ComposeTweetFragment for the authenticated user
+     * Factory method instantiates a new ComposeTweetFragment so that the
+     * authenticated user can reply to a tweet
+     *
      * @param authenticatedUser
+     * @param replyToTweet
      * @return
      */
-    public static ComposeTweetFragment newInstance(User authenticatedUser) {
+    public static ComposeTweetFragment newInstance(User authenticatedUser, Tweet replyToTweet) {
         ComposeTweetFragment fragment = new ComposeTweetFragment();
 
         Bundle args = new Bundle();
         args.putParcelable(AppConstants.EXTRA_USER, Parcels.wrap(authenticatedUser));
+        if (replyToTweet != null) {
+            args.putParcelable(AppConstants.EXTRA_REPLY_TWEET, Parcels.wrap(replyToTweet));
+        }
         fragment.setArguments(args);
 
         return fragment;
+    }
+
+
+    /**
+     * Factory method instantiates a new ComposeTweetFragment for the authenticated user
+     *
+     * @param authenticatedUser
+     * @return
+     */
+    public static ComposeTweetFragment newInstance(User authenticatedUser) {
+        return newInstance(authenticatedUser, null);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Retrieve arguments and initialize class attributes
-        if (getArguments() != null) {
+        Bundle args = getArguments();
+        if (args != null) {
             mAuthenticatedUser = Parcels.unwrap(getArguments().getParcelable(AppConstants.EXTRA_USER));
+            if (args.size() > 1) {
+                mReplyTo = Parcels.unwrap(getArguments().getParcelable(AppConstants.EXTRA_REPLY_TWEET));
+            } else {
+                mReplyTo = null;
+            }
         }
         mTwitterClient = TwitterApplication.getRestClient();
         mTweetMaxLength = getResources().getInteger(R.integer.tweet_max_length);
@@ -107,6 +130,8 @@ public class ComposeTweetFragment extends DialogFragment {
         View tweetView = inflater.inflate(R.layout.fragment_compose_tweet, container, false);
 
         ibCloseFragment = (ImageButton) tweetView.findViewById(R.id.ivClose);
+        ivArrowDown = (ImageView) tweetView.findViewById(R.id.ivArrowDown);
+        tvInReplyTo = (TextView) tweetView.findViewById(R.id.tvInReplyTo);
         ivAuthenticatedUserProfile = (ImageView) tweetView.findViewById(R.id.ivProfileImage);
         etTweet = (EditText) tweetView.findViewById(R.id.etTweet);
         tvTweetSize = (TextView) tweetView.findViewById(R.id.tvMessageSize);
@@ -137,7 +162,7 @@ public class ComposeTweetFragment extends DialogFragment {
                 int color = android.R.color.tertiary_text_dark;
                 if (remainingLength < 0) {
                     btTweetEnabled = false;
-                    color  = android.R.color.holo_red_light;
+                    color = android.R.color.holo_red_light;
                 }
                 tvTweetSize.setTextColor(ContextCompat.getColor(getContext(), color));
                 btTweet.setEnabled(btTweetEnabled);
@@ -155,7 +180,7 @@ public class ComposeTweetFragment extends DialogFragment {
                 Editable statusText = etTweet.getText();
                 if (statusText.length() > 0) {
                     mTweet = null;
-                    mTwitterClient.postStatus(statusText.toString(), new JsonHttpResponseHandler() {
+                    mTwitterClient.postStatus(statusText.toString(), mReplyTo, new JsonHttpResponseHandler() {
                         @Override
                         public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                             // TODO return tweet
@@ -184,6 +209,25 @@ public class ComposeTweetFragment extends DialogFragment {
 
         return tweetView;
     }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        ivArrowDown.setImageResource(0);
+        tvInReplyTo.setText("");
+
+        if (mReplyTo != null) {
+            User replyToUser = mReplyTo.getUser();
+            //
+            ivArrowDown.setImageResource(R.drawable.arrow_down);
+            tvInReplyTo.setText(String.format("%s %s", getString(R.string.tweet_in_reply_to), replyToUser.getName()));
+            //
+            etTweet.setText(String.format("@%s ", replyToUser.getScreenName()));
+            etTweet.setSelection(etTweet.length());
+        }
+    }
+
 
     /**
      * Modify dialog to occupy 90% of the screen

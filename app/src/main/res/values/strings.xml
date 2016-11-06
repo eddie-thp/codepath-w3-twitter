@@ -11,10 +11,10 @@
     <string name="action_retry">Retry</string>
     <string name="action_continue_offline">Continue off-line</string>
 
+    <!-- General text -->
+    <string name="tweet_in_reply_to">In reply to</string>
 
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- Compose tweet -->
     <string name="tweet_hint">What\'s happening?</string>
     <string name="tweet_button">Tweet</string>
 

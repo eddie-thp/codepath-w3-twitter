@@ -226,12 +226,16 @@ public abstract class TweetsTimelineFragment extends Fragment {
      * Get Tweets list from the Tweet REST API
      */
     private void fetchTimeline() {
+        fetchTimeline(false);
+    }
 
+    private void fetchTimeline(final boolean reset) {
 
         Map<String, String> timelineParameters = getTimelineParameters();
 
-        long maxId = getMaxId();
-        long sinceId = getSinceId();
+        long maxId = (reset ? -1 : getMaxId());
+        long sinceId = (reset ? 1 : getSinceId());
+
         mTwitterClient.getTweetsTimeline(mApiResourceName, maxId, sinceId, timelineParameters, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
@@ -243,6 +247,17 @@ public abstract class TweetsTimelineFragment extends Fragment {
                 // Retrieve new tweets from response
                 List<Tweet> newTweets = Tweet.fromJSONArray(response);
                 int newTweetsCount = newTweets.size();
+
+                // Reset only happens if we have a successful response
+                if (reset) {
+                    // Reset pagination information controllers
+                    mSinceIdIdx = -1;
+                    mMaxIdIdx = -1;
+                    //
+                    int tweetsToRemoveCount = mTweets.size();
+                    mTweets.clear();
+                    mTweetsAdapter.notifyItemRangeRemoved(0, tweetsToRemoveCount);
+                }
 
                 // In case we are not refreshing
                 if (mSinceIdIdx == -1) {
@@ -276,6 +291,19 @@ public abstract class TweetsTimelineFragment extends Fragment {
                 // TODO handle error
             }
         });
+    }
+
+    public void resetAndRefresh() {
+        fetchTimeline(true);
+    }
+
+    public void addStatusUpdateTweet(Tweet status) {
+        // Insert tweet into the timeline
+        mTweets.add(0, status);
+        mTweetsAdapter.notifyItemInserted(0);
+        rvTweets.scrollToPosition(0);
+        // Reset and refresh tweets
+        resetAndRefresh();
     }
 
 }

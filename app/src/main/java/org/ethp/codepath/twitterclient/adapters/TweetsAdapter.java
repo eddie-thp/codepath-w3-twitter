@@ -2,6 +2,12 @@ package org.ethp.codepath.twitterclient.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -10,15 +16,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.codepath.apps.twitterclient.R;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.squareup.picasso.Picasso;
 
+import org.ethp.codepath.twitterclient.TwitterApplication;
+import org.ethp.codepath.twitterclient.TwitterClient;
 import org.ethp.codepath.twitterclient.activities.ProfileActivity;
 import org.ethp.codepath.twitterclient.application.AppConstants;
+import org.ethp.codepath.twitterclient.fragments.ComposeTweetFragment;
 import org.ethp.codepath.twitterclient.models.Tweet;
 import org.ethp.codepath.twitterclient.models.User;
+import org.json.JSONObject;
 import org.parceler.Parcels;
 
 import java.text.ParseException;
@@ -26,9 +36,10 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+import cz.msebera.android.httpclient.Header;
 import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
 
-import static com.codepath.apps.twitterclient.R.id.tvName;
+import static com.codepath.apps.twitterclient.R.id.ivRetweet;
 
 /**
  * Tweets timeline RecyclerView adapter implementation
@@ -37,19 +48,28 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
 
     private static final String LOG_TAG = "TweetsAdapter";
 
+    TwitterClient mTwitterClient;
+
     /**
      * Holds a reference to the Tweet Item layout widgets
      */
-    public class TweetViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class TweetViewHolder extends RecyclerView.ViewHolder {
 
         Context mContext;
         ImageView ivProfileImage;
         TextView tvUserName;
         TextView tvScreenName;
         TextView tvText;
+        ImageView ivReply;
+        ImageView ivRetweet;
+        TextView tvRetweetCount;
+        ImageView ivFavorite;
+        TextView tvFavoriteCount;
+        ImageView ivShare;
 
         /**
          * Constructor
+         *
          * @param itemView
          */
         public TweetViewHolder(View itemView) {
@@ -61,24 +81,75 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
             tvUserName = (TextView) itemView.findViewById(R.id.tvUserName);
             tvScreenName = (TextView) itemView.findViewById(R.id.tvScreenNameRelativeTime);
             tvText = (TextView) itemView.findViewById(R.id.tvText);
+            ivReply = (ImageView) itemView.findViewById(R.id.ivReply);
+            ivRetweet = (ImageView) itemView.findViewById(R.id.ivRetweet);
+            tvRetweetCount = (TextView) itemView.findViewById(R.id.tvRetweetCount);
+            ivFavorite = (ImageView) itemView.findViewById(R.id.ivFavorite);
+            tvFavoriteCount = (TextView) itemView.findViewById(R.id.tvFavoriteCount);
+            ivShare = (ImageView) itemView.findViewById(R.id.ivShare);
 
             if (!(mContext instanceof ProfileActivity)) {
-                ivProfileImage.setOnClickListener(this);
+                setupOnProfileClickListener();
             }
+
+            setupOnReplyClickListener();
+            setupOnFavoriteClickListener();
         }
 
-        @Override
-        public void onClick(View view) {
+        private void setupOnReplyClickListener() {
+            ivReply.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+
+                    // Check if an item was deleted, but the user clicked it before the UI removed it
+                    if (position != RecyclerView.NO_POSITION) {
+                        Tweet replyToTweet = tweets.get(position);
+                        FragmentManager fm = ((FragmentActivity) getContext()).getSupportFragmentManager();
+                        ComposeTweetFragment composeComposeTweetFragment = ComposeTweetFragment.newInstance(User.authenticatedUserFromDb(), replyToTweet);
+                        composeComposeTweetFragment.show(fm, "fragment_send_tweet");
+                    }
+                }
+            });
+        }
+
+        private void setupOnProfileClickListener() {
+            ivProfileImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+
+                    // Check if an item was deleted, but the user clicked it before the UI removed it
+                    if (position != RecyclerView.NO_POSITION) {
+                        Tweet tweet = tweets.get(position);
+                        Intent intent = new Intent(mContext, ProfileActivity.class);
+                        intent.putExtra(AppConstants.EXTRA_USER, Parcels.wrap(tweet.getUser()));
+                        mContext.startActivity(intent);
+                    }
+
+                }
+            });
+        }
+
+        public void setupOnFavoriteClickListener() {
             int position = getAdapterPosition();
 
             // Check if an item was deleted, but the user clicked it before the UI removed it
             if (position != RecyclerView.NO_POSITION) {
                 Tweet tweet = tweets.get(position);
-                Intent intent = new Intent(mContext, ProfileActivity.class);
-                intent.putExtra(AppConstants.EXTRA_USER, Parcels.wrap(tweet.getUser()));
-                mContext.startActivity(intent);
+                mTwitterClient.postFavorite(tweet.getUid(), new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        // TODO
+                    }
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                        // TODO
+                    }
+                });
             }
         }
+
     }
 
     Context context;
@@ -87,16 +158,19 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
 
     /**
      * TweetsAdapter Constructor
+     *
      * @param context
      * @param tweets
      */
     public TweetsAdapter(Context context, List<Tweet> tweets) {
+        mTwitterClient = TwitterApplication.getRestClient();
         this.context = context;
         this.tweets = tweets;
     }
 
     /**
      * Returns the Context object
+     *
      * @return Context
      */
     private Context getContext() {
@@ -105,6 +179,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
 
     /**
      * Creates the Tweet Item view holder object
+     *
      * @param parent
      * @param viewType
      * @return
@@ -130,6 +205,20 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
                 tweet.getCreatedAt());
         holder.tvScreenName.setText(formattedScreenNameRelativeTime);
         holder.tvText.setText(tweet.getText());
+
+        Resources res = getContext().getResources();
+
+        // Set the retweet color
+        int retweetColor = (tweet.isRetweeted() ? R.color.twitterRetweetedIcon : R.color.twitterItemIcons);
+        holder.tvRetweetCount.setText(String.valueOf(tweet.getRetweetCount()));
+        holder.tvRetweetCount.setTextColor(res.getColor(retweetColor));
+        DrawableCompat.setTint(holder.ivRetweet.getDrawable(), res.getColor(retweetColor));
+
+        // Set the favorite color
+        int favoriteColor = (tweet.isFavorited() ? R.color.twitterFavoritedIcon : R.color.twitterItemIcons);
+        holder.tvFavoriteCount.setText(String.valueOf(tweet.getFavoriteCount()));
+        holder.tvFavoriteCount.setTextColor(res.getColor(favoriteColor));
+        DrawableCompat.setTint(holder.ivFavorite.getDrawable(), res.getColor(favoriteColor));
 
         Picasso.with(getContext()).load(tweet.getUser().getProfileImageUrl()).transform(new RoundedCornersTransformation(5, 0)).into(holder.ivProfileImage);
     }

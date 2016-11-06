@@ -5,6 +5,7 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,12 +13,19 @@ import java.util.List;
 /**
  * Tweet model class
  */
+@Parcel
 public class Tweet {
     // Unique Id
     long uid;
     User user;
     String text;
     String createdAt;
+
+    int favoriteCount;
+    boolean favorited;
+
+    int retweetCount;
+    boolean retweeted;
 
     public long getUid() {
         return uid;
@@ -35,11 +43,24 @@ public class Tweet {
         return user;
     }
 
+    public int getRetweetCount() { return retweetCount; }
+
+    public boolean isRetweeted() { return retweeted; }
+
+    public int getFavoriteCount() { return favoriteCount; }
+
+    public boolean isFavorited() { return retweeted; }
+
     public static Tweet fromJSONObject(JSONObject jsonObject) throws JSONException {
         Tweet tweet = new Tweet();
         tweet.uid = jsonObject.getLong("id");
         tweet.text = jsonObject.getString("text");
         tweet.createdAt = jsonObject.getString("created_at");
+        tweet.favoriteCount = jsonObject.getInt("favorite_count");
+        tweet.favorited = jsonObject.getBoolean("favorited");
+        tweet.retweetCount = jsonObject.getInt("retweet_count");
+        tweet.retweeted = jsonObject.getBoolean("retweeted");
+
         tweet.user = User.fromJSONObject(jsonObject.getJSONObject("user"));
 
         return tweet;
