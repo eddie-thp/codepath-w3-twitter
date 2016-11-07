@@ -172,6 +172,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
 
                                 try {
                                     Tweet retweetedTweet;
+                                    // TODO this looks bad, code should be refactored in the future
                                     if (retweeted) {
                                         // Means we are unretweeting it, the response is the original tweet
                                         retweetedTweet = Tweet.fromJSONObject(response);
@@ -225,13 +226,13 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
                                     tweets.set(position, favoritedTweet);
                                     notifyItemChanged(position);
                                 } catch (JSONException e) {
-
+                                    Log.e(LOG_TAG, "Failed to parse post favorite response", e);
                                 }
                             }
 
                             @Override
                             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                                // TODO
+                                Log.e(LOG_TAG, "Post favorite response error", throwable);
                             }
                         });
                     }
