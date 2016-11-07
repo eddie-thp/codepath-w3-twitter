@@ -171,13 +171,26 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.TweetViewH
                             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
 
                                 try {
-                                    Tweet retweetedTweet = Tweet.fromJSONObject(response);
-                                    // There seems to be a bug in the API, in that the retweeted flag doesn't get reseted
-                                    retweetedTweet.setRetweeted(!retweeted);
+                                    Tweet retweetedTweet;
+                                    if (retweeted) {
+                                        // Means we are unretweeting it, the response is the original tweet
+                                        retweetedTweet = Tweet.fromJSONObject(response);
+
+                                        if (retweetedTweet.isRetweeted()) {
+                                            // There seems to be a bug in the unretweet api where the retweet status/count is not up to date
+                                            // Lets update it manually
+                                            retweetedTweet.setRetweeted(false);
+                                            retweetedTweet.setRetweetCount(retweetedTweet.getRetweetCount() - 1);
+                                        }
+
+                                    } else {
+                                        // Means we are retweeting
+                                        retweetedTweet = Tweet.fromJSONObject(response.getJSONObject("retweeted_status"));
+                                    }
                                     tweets.set(position, retweetedTweet);
                                     notifyItemChanged(position);
                                 } catch (JSONException e) {
-
+                                    Log.e(LOG_TAG, e.getMessage(), e);
                                 }
                             }
 

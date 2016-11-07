@@ -45,6 +45,10 @@ public class Tweet {
 
     public int getRetweetCount() { return retweetCount; }
 
+    public void setRetweetCount(int retweetCount) {
+        this.retweetCount = retweetCount;
+    }
+
     public boolean isRetweeted() { return retweeted; }
 
     public void setRetweeted(boolean retweeted) {
